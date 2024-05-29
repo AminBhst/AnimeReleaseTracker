@@ -27,19 +27,23 @@ public class SeasonalAnimeInitializerJob implements Job {
         this.configProperties = configProperties;
     }
 
+    public void initialize_forced() {
+        if (StringUtils.isNotBlank(configProperties.getForceInitializeSeason()))
+            return;
+
+        try {
+            seasonalAnimeInitializer.initializeSeason(
+                    configProperties.getForceInitializeYear(),
+                    configProperties.getForceInitializeSeason()
+            );
+        } catch (Throwable t) {
+            log.error("Failed to force initialize season", t);
+        }
+    }
+
+
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
-        if (StringUtils.isNotBlank(configProperties.getForceInitializeSeason())) {
-            try {
-                seasonalAnimeInitializer.initializeSeason(
-                        configProperties.getForceInitializeYear(),
-                        configProperties.getForceInitializeSeason()
-                );
-            } catch (Throwable t) {
-                log.error("Failed to force initialize season", t);
-            }
-        }
-
         try {
             seasonalAnimeInitializer.initializeCurrentSeasonalAnime();
         } catch (Throwable t) {

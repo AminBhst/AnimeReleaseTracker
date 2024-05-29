@@ -20,7 +20,9 @@ public class AnimeReleaseTrackerApplication {
     public static void main(String[] args) throws TelegramApiException {
         ConfigurableApplicationContext ctx = SpringApplication.run(AnimeReleaseTrackerApplication.class, args);
         AnimeCrawlerBot bot = ctx.getBean(AnimeCrawlerBot.class);
-        ctx.getBean(SeasonalAnimeInitializerJob.class).execute(null);
+        SeasonalAnimeInitializerJob initializer = ctx.getBean(SeasonalAnimeInitializerJob.class);
+        initializer.initialize_forced();
+        initializer.execute(null);
         registerBot(bot);
     }
 
