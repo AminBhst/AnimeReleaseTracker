@@ -23,7 +23,7 @@ public abstract class AbstractAnimeReleaseTracker {
                 return new TrackerResult(latestEpisodeNumber, true);
             }
         } catch (Throwable t) {
-            log.error("Failed to check for new episode");
+            log.error("Failed to check for new episode", t);
         }
         return new TrackerResult(0, false);
     }
