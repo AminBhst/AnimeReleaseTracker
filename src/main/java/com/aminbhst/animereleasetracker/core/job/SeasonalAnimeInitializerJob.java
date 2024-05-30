@@ -47,7 +47,7 @@ public class SeasonalAnimeInitializerJob implements Job {
         try {
             seasonalAnimeInitializer.initializeCurrentSeasonalAnime();
         } catch (Throwable t) {
-            log.error("Failed to initialize currnet season", t);
+            log.error("Failed to initialize current season", t);
         }
 
     }
