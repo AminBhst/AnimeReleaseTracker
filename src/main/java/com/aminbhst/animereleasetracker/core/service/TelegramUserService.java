@@ -29,12 +29,17 @@ public class TelegramUserService {
     @Transactional
     public void addToWatchingListAndReverse(TelegramUser user, AnimeTitle animeTitle) {
         animeTitle = animeTitleRepository.findById(animeTitle.getId()).orElse(null);
-        user = telegramUserRepository.findById(user.getId()).orElse(null);
-        if (animeTitle == null || user == null)
+        TelegramUser existingUser = telegramUserRepository.findById(user.getId()).orElse(null);
+        if (animeTitle == null)
             return;
 
-        animeTitle.getUsers().add(user);
-        user.getCachedWatchList().add(animeTitle);
+        if (existingUser == null)
+            existingUser = user;
+
+        animeTitle.getUsers().add(existingUser);
+        existingUser.getCachedWatchList().add(animeTitle);
+        animeTitleRepository.save(animeTitle);
+        telegramUserRepository.save(existingUser);
     }
 
 }

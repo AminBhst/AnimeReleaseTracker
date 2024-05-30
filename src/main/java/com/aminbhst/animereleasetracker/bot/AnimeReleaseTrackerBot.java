@@ -59,12 +59,17 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
     public void onUpdateReceived(Update update) {
         String text = update.getMessage().getText();
         log.info("Caught message! {}", text);
-        if (text.equalsIgnoreCase("/setup")) {
+        if (text.startsWith("/setup")) {
             startSetupChain(update);
+            return;
         }
 
-        Integer repliedToId = update.getMessage().getReplyToMessage().getMessageId();
-        if (setupMessageIds.contains(repliedToId)) {
+
+        Message replyToMessage = update.getMessage().getReplyToMessage();
+        if (replyToMessage == null)
+            return;
+
+        if (setupMessageIds.contains(replyToMessage.getMessageId())) {
             handleSetup(update);
         }
     }
@@ -97,15 +102,15 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
         if (user == null) {
             user = new TelegramUser();
         }
-        for (AnimeTitle animeTitle : userWatchingList) {
-            animeTitle = animeTitleRepository.findByMyAnimeListId(animeTitle.getMyAnimeListId());
-            telegramUserService.addToWatchingListAndReverse(user, animeTitle);
-        }
         user.setCachedWatchList(new HashSet<>(userWatchingList));
         user.setMyAnimeListUsername(myAnimeListUsername);
         user.setTelegramId(userId);
         user.setTelegramUsername(update.getMessage().getFrom().getUserName());
         telegramUserRepository.save(user);
+        for (AnimeTitle animeTitle : userWatchingList) {
+            animeTitle = animeTitleRepository.findByMyAnimeListId(animeTitle.getMyAnimeListId());
+            telegramUserService.addToWatchingListAndReverse(user, animeTitle);
+        }
     }
 
     private void handleGroupSetup(Update update) {
