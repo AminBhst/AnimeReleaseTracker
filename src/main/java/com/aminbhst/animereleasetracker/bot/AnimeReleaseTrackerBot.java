@@ -92,9 +92,14 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
     private void handleUserSetup(Update update) {
         Long userId = update.getMessage().getFrom().getId();
         TelegramUser user = telegramUserRepository.findByTelegramId(userId);
-        String text = update.getMessage().getText();
-        String myAnimeListUsername = text.replaceAll("/setup", "").trim();
-        List<AnimeTitle> userWatchingList = myAnimeListApi.getUserWatchingList(myAnimeListUsername);
+        String myAnimeListUsername = update.getMessage().getText();
+        List<AnimeTitle> userWatchingList;
+        try {
+            userWatchingList = myAnimeListApi.getUserWatchingList(myAnimeListUsername);
+        } catch (Throwable t) {
+            sendText(update, "Failed to retrieve your watching list. The provided username may be incorrect!", true);
+            return;
+        }
         if (user == null) {
             user = new TelegramUser();
         }
