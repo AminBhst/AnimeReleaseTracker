@@ -7,6 +7,7 @@ import com.aminbhst.animereleasetracker.core.tracker.AbstractAnimeReleaseTracker
 import com.aminbhst.animereleasetracker.core.tracker.AnimeListReleaseTracker;
 import com.aminbhst.animereleasetracker.core.tracker.NyaaReleaseTracker;
 import com.aminbhst.animereleasetracker.core.tracker.TrackerResult;
+import com.aminbhst.animereleasetracker.exception.AnimeTitleExistsException;
 import com.aminbhst.animereleasetracker.util.DateUtils;
 import com.aminbhst.animereleasetracker.util.HttpUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -110,7 +111,7 @@ public class MyAnimeListApi {
         }
     }
 
-    private AnimeTitle createAnimeTitleFromAnimeNode(JsonNode node, String season, int year) {
+    private AnimeTitle createAnimeTitleFromAnimeNode(JsonNode node, String season, int year) throws AnimeTitleExistsException {
         JsonNode animeNode = node.get("node");
         int id = animeNode.get("id").asInt();
         String title = animeNode.get("title").asText();
@@ -118,6 +119,11 @@ public class MyAnimeListApi {
         JsonNode mediumPic = mainPic.get("medium");
         JsonNode largePic = mainPic.get("large");
         AnimeTitle animeTitle = new AnimeTitle();
+
+        AnimeTitle existing = animeTitleRepository.findByMyAnimeListId(id);
+        if (existing != null)
+            throw new AnimeTitleExistsException();
+
         animeTitle.setMyAnimeListId(id);
         animeTitle.setTitle(title);
         animeTitle.setReleaseSeason(season);
