@@ -26,8 +26,10 @@ public class SeasonalAnimeInitializerJob implements Job {
     }
 
     public void initialize_forced() {
-        if (StringUtils.isNotBlank(configProperties.getForceInitializeSeason()))
+        if (StringUtils.isNotBlank(configProperties.getForceInitializeSeason())) {
+            log.warn("Will not force initialize! season is null");
             return;
+        }
 
         try {
             seasonalAnimeInitializer.initializeSeason(
