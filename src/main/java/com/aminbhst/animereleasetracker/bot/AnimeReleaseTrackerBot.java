@@ -58,7 +58,7 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
     @Override
     public void onUpdateReceived(Update update) {
         String text = update.getMessage().getText();
-        log.info("Caught message! {}", text);
+//        log.info("Caught message! {}", text);
         if (text.startsWith("/setup")) {
             startSetupChain(update);
             return;
