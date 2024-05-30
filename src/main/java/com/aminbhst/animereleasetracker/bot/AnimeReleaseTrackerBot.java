@@ -74,12 +74,6 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
     }
 
     private void handleSetup(Update update) {
-        String text = update.getMessage().getText();
-        String malId = text.replaceAll("/setup", "");
-        if (StringUtils.isEmpty(malId)) {
-            sendText(update, "MyAnimeList username not provided!", true);
-            return;
-        }
         this.handleUserSetup(update);
         boolean isGroupMessage = update.getMessage().isGroupMessage();
         if (isGroupMessage) {
