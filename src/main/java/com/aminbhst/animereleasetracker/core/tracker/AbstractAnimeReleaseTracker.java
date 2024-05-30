@@ -5,6 +5,8 @@ import com.aminbhst.animereleasetracker.core.repository.AnimeTitleRepository;
 import com.aminbhst.animereleasetracker.core.tracker.TrackerResult;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Date;
+
 @Slf4j
 public abstract class AbstractAnimeReleaseTracker {
 
@@ -24,6 +26,18 @@ public abstract class AbstractAnimeReleaseTracker {
             log.error("Failed to check for new episode");
         }
         return new TrackerResult(0, false);
+    }
+
+
+    public void setLatestEpisodes(AnimeTitle animeTitle, TrackerResult result) {
+        if (this instanceof NyaaReleaseTracker) {
+            animeTitle.setNyaaLatestTrackedEpisode(result.getNewEpisode());
+        } else if (this instanceof AnimeListReleaseTracker) {
+            animeTitle.setAnimeListLatestTrackedEpisode(result.getNewEpisode());
+        } else if (this instanceof MyAnimeListReleaseTracker) {
+            animeTitle.setMyAnimeListLatestTrackedEpisode(result.getNewEpisode());
+        }
+        animeTitle.setLatestCheckDate(new Date());
     }
 
     public abstract int getLatestEpisodeNumber(AnimeTitle animeTitle) throws Exception;

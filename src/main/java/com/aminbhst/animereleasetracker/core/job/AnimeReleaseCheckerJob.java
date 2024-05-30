@@ -69,21 +69,12 @@ public class AnimeReleaseCheckerJob extends JPAPageProcessor<AnimeTitle> impleme
     }
 
     private void handleReleaseCheck(AbstractAnimeReleaseTracker releaseTracker, AnimeTitle animeTitle) {
-        if (!animeTitle.getTitle().contains("Kaijuu "))
-            return;
-
         TrackerResult result = releaseTracker.checkNewEpisode(animeTitle);
         if (result.getNewEpisode() == 0 || !result.isNewEpisodeReleased())
             return;
 
-        if (releaseTracker instanceof NyaaReleaseTracker) {
-            animeTitle.setNyaaLatestTrackedEpisode(result.getNewEpisode());
-        } else if (releaseTracker instanceof AnimeListReleaseTracker) {
-            animeTitle.setAnimeListLatestTrackedEpisode(result.getNewEpisode());
-        } else if (releaseTracker instanceof MyAnimeListReleaseTracker) {
-            animeTitle.setMyAnimeListLatestTrackedEpisode(result.getNewEpisode());
-        }
-        animeTitle.setLatestCheckDate(new Date());
+        releaseTracker.setLatestEpisodes(animeTitle, result);
         telegramNotifier.notifyRelease(animeTitle);
     }
+
 }

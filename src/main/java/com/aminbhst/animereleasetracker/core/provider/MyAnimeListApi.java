@@ -3,6 +3,10 @@ package com.aminbhst.animereleasetracker.core.provider;
 import com.aminbhst.animereleasetracker.config.ConfigProperties;
 import com.aminbhst.animereleasetracker.core.model.AnimeTitle;
 import com.aminbhst.animereleasetracker.core.repository.AnimeTitleRepository;
+import com.aminbhst.animereleasetracker.core.tracker.AbstractAnimeReleaseTracker;
+import com.aminbhst.animereleasetracker.core.tracker.AnimeListReleaseTracker;
+import com.aminbhst.animereleasetracker.core.tracker.NyaaReleaseTracker;
+import com.aminbhst.animereleasetracker.core.tracker.TrackerResult;
 import com.aminbhst.animereleasetracker.util.DateUtils;
 import com.aminbhst.animereleasetracker.util.HttpUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -21,13 +26,20 @@ import java.util.Map;
 public class MyAnimeListApi {
 
     private final ConfigProperties configProperties;
-
     private final AnimeTitleRepository animeTitleRepository;
+    private final AbstractAnimeReleaseTracker[] releaseTrackers;
 
-    public MyAnimeListApi(@Autowired ConfigProperties configProperties,
-                          @Autowired AnimeTitleRepository animeTitleRepository) {
+    @Autowired
+    public MyAnimeListApi(ConfigProperties configProperties,
+                          AnimeTitleRepository animeTitleRepository,
+                          NyaaReleaseTracker nyaaReleaseTracker,
+                          AnimeListReleaseTracker animeListReleaseTracker) {
         this.configProperties = configProperties;
         this.animeTitleRepository = animeTitleRepository;
+        this.releaseTrackers = new AbstractAnimeReleaseTracker[]{
+                nyaaReleaseTracker,
+                animeListReleaseTracker
+        };
     }
 
     public static final String HEADER_CLIENT_ID = "X-MAL-CLIENT-ID";
@@ -59,6 +71,7 @@ public class MyAnimeListApi {
 
     public void initializeSeasonalAnime(int year, String season) {
         String url = String.format(URL_FORMAT_SEASONAL, year, season);
+        log.info("Started initializing seasonal anime of {} {}", season, year);
         initializeAnimeFromMyAnimeList(url);
     }
 
@@ -72,6 +85,7 @@ public class MyAnimeListApi {
         for (JsonNode node : nodes) {
             try {
                 AnimeTitle animeTitle = createAnimeTitleFromAnimeNode(node, season, year);
+                this.setLatestEpisodes(animeTitle);
                 animeTitleList.add(animeTitle);
             } catch (Throwable t) {
                 log.error("Failed to get animeTitle From anime node", t);
@@ -87,6 +101,13 @@ public class MyAnimeListApi {
 
         log.info("Moving to the next page");
         initializeAnimeFromMyAnimeList(next.asText());
+    }
+
+    private void setLatestEpisodes(AnimeTitle animeTitle) {
+        for (AbstractAnimeReleaseTracker releaseTracker : releaseTrackers) {
+            TrackerResult result = releaseTracker.checkNewEpisode(animeTitle);
+            releaseTracker.setLatestEpisodes(animeTitle, result);
+        }
     }
 
     private AnimeTitle createAnimeTitleFromAnimeNode(JsonNode node, String season, int year) {

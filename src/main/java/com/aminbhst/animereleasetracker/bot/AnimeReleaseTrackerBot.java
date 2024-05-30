@@ -26,7 +26,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class AnimeCrawlerBot extends TelegramLongPollingBot implements TelegramNotifier {
+public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements TelegramNotifier {
 
     private final AnimeTitleRepository animeTitleRepository;
     private final TelegramUserRepository telegramUserRepository;
@@ -36,12 +36,12 @@ public class AnimeCrawlerBot extends TelegramLongPollingBot implements TelegramN
     private final ConfigProperties configProperties;
 
     @Autowired
-    public AnimeCrawlerBot(AnimeTitleRepository animeTitleRepository,
-                           TelegramUserRepository telegramUserRepository,
-                           GroupRepository groupRepository,
-                           MyAnimeListApi myAnimeListApi,
-                           TelegramUserService telegramUserService,
-                           ConfigProperties configProperties) {
+    public AnimeReleaseTrackerBot(AnimeTitleRepository animeTitleRepository,
+                                  TelegramUserRepository telegramUserRepository,
+                                  GroupRepository groupRepository,
+                                  MyAnimeListApi myAnimeListApi,
+                                  TelegramUserService telegramUserService,
+                                  ConfigProperties configProperties) {
         super(configProperties.getTelegramBotToken()); // TODO remove before moving to git
         this.animeTitleRepository = animeTitleRepository;
         this.telegramUserRepository = telegramUserRepository;
