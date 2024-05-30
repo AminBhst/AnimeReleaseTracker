@@ -37,6 +37,11 @@ public class AnimeListReleaseTracker extends AbstractAnimeReleaseTracker {
 
             String episodeNumStr = text.replaceAll("Episode ", "");
             try {
+                if (episodeNumStr.contains("-")) {
+                    String updateText = document.getElementsByClass("updateSingle").text();
+                    episodeNumStr = updateText.substring(updateText.indexOf("قسمت") + 4).trim();
+                }
+
                 int episodeNum = Integer.parseInt(episodeNumStr);
                 if (episodeNum > animeTitle.getAnimeListLatestTrackedEpisode())
                     return episodeNum;
