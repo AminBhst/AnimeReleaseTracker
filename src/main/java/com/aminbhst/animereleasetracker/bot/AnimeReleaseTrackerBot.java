@@ -17,12 +17,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -34,6 +36,8 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
     private final MyAnimeListApi myAnimeListApi;
     private final TelegramUserService telegramUserService;
     private final ConfigProperties configProperties;
+
+    private final Set<Integer> setupMessageIds = new HashSet<>();
 
     @Autowired
     public AnimeReleaseTrackerBot(AnimeTitleRepository animeTitleRepository,
@@ -55,9 +59,18 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
     public void onUpdateReceived(Update update) {
         String text = update.getMessage().getText();
         log.info("Caught message! {}", text);
-        if (text.startsWith("/setup")) {
+        if (text.equalsIgnoreCase("/setup")) {
+            startSetupChain(update);
+        }
+
+        Integer repliedToId = update.getMessage().getReplyToMessage().getMessageId();
+        if (setupMessageIds.contains(repliedToId)) {
             handleSetup(update);
         }
+    }
+
+    private void startSetupChain(Update update) {
+        sendText(update, "Reply to this message with your MyAnimeList username to setup your profile", true);
     }
 
     private void handleSetup(Update update) {
@@ -73,6 +86,7 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
             handleGroupSetup(update);
         }
         sendText(update, "Setup completed successfully!", true);
+        this.setupMessageIds.remove(update.getMessage().getReplyToMessage().getMessageId());
     }
 
     private void handleUserSetup(Update update) {
@@ -128,7 +142,8 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
         }
         sendMessage.setChatId(update.getMessage().getChatId());
         try {
-            execute(sendMessage);
+            Message message = execute(sendMessage);
+            this.setupMessageIds.add(message.getMessageId());
         } catch (TelegramApiException e) {
             log.error("Failed to send message!", e);
         }
