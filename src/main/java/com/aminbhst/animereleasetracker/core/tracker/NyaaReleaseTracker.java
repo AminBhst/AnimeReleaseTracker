@@ -37,8 +37,12 @@ public class NyaaReleaseTracker extends AbstractAnimeReleaseTracker {
         String url = String.format(URL_FORMAT_SEARCH, animeTitle.getTitle().replaceAll(" ", "+"));
         String htmlResponse = HttpUtils.getHtmlResponse(url);
         Document html = Jsoup.parse(htmlResponse);
-        Elements tableRows = html.getElementsByClass("table-responsive")
-                .get(0)
+        Elements tableResponsive = html.getElementsByClass("table-responsive");
+        if (tableResponsive.isEmpty()) {
+            log.info("Failed to find Anime {} on nyaa.si", animeTitle.getTitle());
+            return 0;
+        }
+        Elements tableRows = tableResponsive.get(0)
                 .getElementsByTag("table")
                 .get(0)
                 .getElementsByTag("tr");
