@@ -34,7 +34,11 @@ public class NyaaReleaseTracker extends AbstractAnimeReleaseTracker {
 
     @Override
     public int getLatestEpisodeNumber(AnimeTitle animeTitle) {
-        String url = String.format(URL_FORMAT_SEARCH, animeTitle.getTitle().replaceAll(" ", "+"));
+        String url = String.format(
+                URL_FORMAT_SEARCH,
+                animeTitle.getTitle().replaceAll(" ", "+")
+                        .replaceAll("\"", "")
+        );
         String htmlResponse = HttpUtils.getHtmlResponse(url);
         Document html = Jsoup.parse(htmlResponse);
         Elements tableResponsive = html.getElementsByClass("table-responsive");
