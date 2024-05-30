@@ -16,8 +16,8 @@ public class AnimeReleaseTrackerApplication {
         ConfigurableApplicationContext ctx = SpringApplication.run(AnimeReleaseTrackerApplication.class, args);
         AnimeReleaseTrackerBot bot = ctx.getBean(AnimeReleaseTrackerBot.class);
         SeasonalAnimeInitializerJob initializer = ctx.getBean(SeasonalAnimeInitializerJob.class);
-        initializer.initialize_forced();
-        initializer.execute(null);
+//        initializer.initialize_forced();
+//        initializer.execute(null);
         registerBot(bot);
     }
 
