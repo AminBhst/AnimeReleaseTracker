@@ -9,7 +9,6 @@ import com.aminbhst.animereleasetracker.core.tracker.MyAnimeListReleaseTracker;
 import com.aminbhst.animereleasetracker.core.tracker.NyaaReleaseTracker;
 import com.aminbhst.animereleasetracker.core.tracker.TrackerResult;
 import com.aminbhst.animereleasetracker.util.JPAPageProcessor;
-import com.aminbhst.quartzautoconfigboot.annotation.QuartzJob;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -24,7 +23,6 @@ import java.util.Date;
 
 @Component
 @DisallowConcurrentExecution
-@QuartzJob(repeatInterval = 1000)
 public class AnimeReleaseCheckerJob extends JPAPageProcessor<AnimeTitle> implements Job {
 
 
