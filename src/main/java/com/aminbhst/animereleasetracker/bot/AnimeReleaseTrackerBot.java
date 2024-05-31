@@ -91,9 +91,11 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
 
     private void handleProfileSetup(Update update) throws AnimeProfileSetupException {
         this.handleUserSetup(update);
+        Boolean isGroupChat = update.getMessage().getChat().isGroupChat();
         boolean isGroupMessage = update.getMessage().isGroupMessage();
         log.info("IS GROUP MESSAGE ? {}", isGroupMessage);
-        if (isGroupMessage) {
+        log.info("IS GROUP CHAT ? {}", isGroupChat);
+        if (isGroupMessage || isGroupChat) {
             telegramUserService.handleGroupSetup(update);
         }
         sendText(update, "Setup completed successfully!", true);

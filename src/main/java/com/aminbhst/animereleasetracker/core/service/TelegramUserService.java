@@ -58,7 +58,7 @@ public class TelegramUserService {
         TelegramGroup existingGroup = groupRepository.findByGroupId(groupId);
         if (existingGroup == null) {
             saveNewGroup(groupId, user);
-            existingGroup = groupRepository.findByGroupId(groupId);
+            return;
         }
         user.setTelegramGroup(existingGroup);
         existingGroup.getRegisteredMembers().add(user);
