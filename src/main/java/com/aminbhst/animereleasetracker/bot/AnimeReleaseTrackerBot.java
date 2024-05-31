@@ -93,9 +93,11 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
         this.handleUserSetup(update);
         Boolean isGroupChat = update.getMessage().getChat().isGroupChat();
         boolean isGroupMessage = update.getMessage().isGroupMessage();
+        Boolean isSuperGroupChat = update.getMessage().getChat().isSuperGroupChat();
         log.info("IS GROUP MESSAGE ? {}", isGroupMessage);
         log.info("IS GROUP CHAT ? {}", isGroupChat);
-        if (isGroupMessage || isGroupChat) {
+        log.info("IS SUPER GROUP CHAT ? {}", isGroupChat);
+        if (isGroupMessage || isGroupChat || isSuperGroupChat) {
             telegramUserService.handleGroupSetup(update);
         }
         sendText(update, "Setup completed successfully!", true);
