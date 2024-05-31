@@ -73,7 +73,7 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
 
         if (setupMessageIds.contains(replyToMessage.getMessageId())) {
             try {
-                handleSetup(update);
+                handleProfileSetup(update);
             } catch (AnimeProfileSetupException t) {
                 sendText(update, BotMessages.SETUP_FAILED, true);
             } catch (Throwable t) {
@@ -89,7 +89,7 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
         setupMessageIds.add(id);
     }
 
-    private void handleSetup(Update update) throws AnimeProfileSetupException {
+    private void handleProfileSetup(Update update) throws AnimeProfileSetupException {
         this.handleUserSetup(update);
         boolean isGroupMessage = update.getMessage().isGroupMessage();
         if (isGroupMessage) {
