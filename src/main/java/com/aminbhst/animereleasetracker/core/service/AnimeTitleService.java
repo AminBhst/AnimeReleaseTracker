@@ -29,4 +29,5 @@ public class AnimeTitleService {
         animeTitleRepository.save(animeTitle);
         telegramUserRepository.save(user);
     }
+
 }

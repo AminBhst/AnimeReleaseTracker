@@ -10,6 +10,7 @@ import com.aminbhst.animereleasetracker.core.repository.AnimeTitleRepository;
 import com.aminbhst.animereleasetracker.core.repository.GroupRepository;
 import com.aminbhst.animereleasetracker.core.repository.TelegramUserRepository;
 import com.aminbhst.animereleasetracker.core.service.TelegramUserService;
+import com.aminbhst.animereleasetracker.exception.AnimeProfileSetupException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,38 +58,47 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
 
     @Override
     public void onUpdateReceived(Update update) {
+        if (update.getMessage() == null || update.getMessage().getText() == null)
+            return;
+
         String text = update.getMessage().getText();
-//        log.info("Caught message! {}", text);
         if (text.startsWith("/setup")) {
             startSetupChain(update);
             return;
         }
-
 
         Message replyToMessage = update.getMessage().getReplyToMessage();
         if (replyToMessage == null)
             return;
 
         if (setupMessageIds.contains(replyToMessage.getMessageId())) {
-            handleSetup(update);
+            try {
+                handleSetup(update);
+            } catch (AnimeProfileSetupException t) {
+                sendText(update, BotMessages.SETUP_FAILED, true);
+            } catch (Throwable t) {
+                sendText(update, BotMessages.UNEXPECTED_ERROR, true);
+            } finally {
+                this.setupMessageIds.remove(replyToMessage.getMessageId());
+            }
         }
     }
 
     private void startSetupChain(Update update) {
-        sendText(update, "Reply to this message with your MyAnimeList username to setup your profile", true);
+        Integer id = sendText(update, BotMessages.SETUP_CHAIN, true);
+        setupMessageIds.add(id);
     }
 
-    private void handleSetup(Update update) {
+    private void handleSetup(Update update) throws AnimeProfileSetupException {
         this.handleUserSetup(update);
         boolean isGroupMessage = update.getMessage().isGroupMessage();
         if (isGroupMessage) {
-            handleGroupSetup(update);
+            telegramUserService.handleGroupSetup(update);
         }
         sendText(update, "Setup completed successfully!", true);
-        this.setupMessageIds.remove(update.getMessage().getReplyToMessage().getMessageId());
     }
 
-    private void handleUserSetup(Update update) {
+    private void handleUserSetup(Update update) throws AnimeProfileSetupException {
         Long userId = update.getMessage().getFrom().getId();
         TelegramUser user = telegramUserRepository.findByTelegramId(userId);
         String myAnimeListUsername = update.getMessage().getText();
@@ -96,8 +106,7 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
         try {
             userWatchingList = myAnimeListApi.getUserWatchingList(myAnimeListUsername);
         } catch (Throwable t) {
-            sendText(update, "Failed to retrieve your watching list. The provided username may be incorrect!", true);
-            return;
+            throw new AnimeProfileSetupException();
         }
         if (user == null) {
             user = new TelegramUser();
@@ -113,32 +122,7 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
         }
     }
 
-    private void handleGroupSetup(Update update) {
-        Long userId = update.getMessage().getFrom().getId();
-        Long groupId = update.getMessage().getChat().getId();
-        TelegramUser user = telegramUserRepository.findByTelegramId(userId);
-        TelegramGroup existingGroup = groupRepository.findByGroupId(groupId);
-        if (existingGroup == null) {
-            saveNewGroup(groupId, user);
-            return;
-        }
-        user.setTelegramGroup(existingGroup);
-        existingGroup.getRegisteredMembers().add(user);
-        telegramUserRepository.save(user);
-        groupRepository.save(existingGroup);
-    }
-
-    private void saveNewGroup(Long groupId, TelegramUser user) {
-        TelegramGroup group = new TelegramGroup();
-        group.setGroupId(groupId);
-        groupRepository.save(group);
-        user.setTelegramGroup(group);
-        group.getRegisteredMembers().add(user);
-        telegramUserRepository.save(user);
-        groupRepository.save(group);
-    }
-
-    private void sendText(Update update, String text, boolean reply) {
+    private Integer sendText(Update update, String text, boolean reply) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setText(text);
         if (reply) {
@@ -147,10 +131,11 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
         sendMessage.setChatId(update.getMessage().getChatId());
         try {
             Message message = execute(sendMessage);
-            this.setupMessageIds.add(message.getMessageId());
+            return message.getMessageId();
         } catch (TelegramApiException e) {
             log.error("Failed to send message!", e);
         }
+        return null;
     }
 
     private void sendText(Long chatId, String text) {
