@@ -6,11 +6,13 @@ import com.aminbhst.animereleasetracker.core.model.TelegramUser;
 import com.aminbhst.animereleasetracker.core.repository.AnimeTitleRepository;
 import com.aminbhst.animereleasetracker.core.repository.GroupRepository;
 import com.aminbhst.animereleasetracker.core.repository.TelegramUserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+@Slf4j
 @Service
 public class TelegramUserService {
 
@@ -47,13 +49,16 @@ public class TelegramUserService {
 
     @Transactional
     public void handleGroupSetup(Update update) {
+        log.info("Inside group setup");
         Long userId = update.getMessage().getFrom().getId();
+        log.info("User id : {}", userId);
         Long groupId = update.getMessage().getChat().getId();
+        log.info("Group id : {}", groupId);
         TelegramUser user = telegramUserRepository.findByTelegramId(userId);
         TelegramGroup existingGroup = groupRepository.findByGroupId(groupId);
         if (existingGroup == null) {
             saveNewGroup(groupId, user);
-            return;
+            existingGroup = groupRepository.findByGroupId(groupId);
         }
         user.setTelegramGroup(existingGroup);
         existingGroup.getRegisteredMembers().add(user);
