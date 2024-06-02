@@ -47,7 +47,7 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
                                   MyAnimeListApi myAnimeListApi,
                                   TelegramUserService telegramUserService,
                                   ConfigProperties configProperties) {
-        super(configProperties.getTelegramBotToken()); // TODO remove before moving to git
+        super(configProperties.getTelegramBotToken());
         this.animeTitleRepository = animeTitleRepository;
         this.telegramUserRepository = telegramUserRepository;
         this.groupRepository = groupRepository;
@@ -55,6 +55,7 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
         this.telegramUserService = telegramUserService;
         this.configProperties = configProperties;
     }
+
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -170,12 +171,16 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
             if (group != null) {
                 StringBuilder text = new StringBuilder();
                 for (TelegramUser member : group.getRegisteredMembers()) {
+                    if (!member.getCachedWatchList().contains(animeTitle))
+                        continue;
+
                     if (StringUtils.isNotBlank(member.getTelegramUsername())) {
                         text.append("@").append(member.getTelegramUsername()).append("\n");
                     } else {
                         text.append("[").append(user.getName()).append("]")
                                 .append("(tg://user?id=").append(user.getTelegramId()).append(")").append("\n");
                     }
+                    notifiedUsers.add(member);
                 }
 
                 text.append("New Episode of ")
@@ -183,8 +188,10 @@ public class AnimeReleaseTrackerBot extends TelegramLongPollingBot implements Te
                         .append(" is now available on animelist.tv");
 
                 sendText(group.getGroupId(), text.toString());
-                notifiedUsers.addAll(group.getRegisteredMembers());
             }
+            if (notifiedUsers.contains(user))
+                continue;
+
             String text = "New episode of %s is now released on animelist!";
             sendText(user.getTelegramId(), String.format(text, animeTitle.getTitle()));
         }
