@@ -9,6 +9,7 @@ import com.aminbhst.animereleasetracker.core.tracker.MyAnimeListReleaseTracker;
 import com.aminbhst.animereleasetracker.core.tracker.NyaaReleaseTracker;
 import com.aminbhst.animereleasetracker.core.tracker.TrackerResult;
 import com.aminbhst.animereleasetracker.util.JPAPageProcessor;
+import com.aminbhst.quartzautoconfigboot.annotation.QuartzJob;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -18,11 +19,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.Date;
 
 
 @Component
 @DisallowConcurrentExecution
+@QuartzJob(cron = "0 0 * ? * *")
 public class AnimeReleaseCheckerJob extends JPAPageProcessor<AnimeTitle> implements Job {
 
 

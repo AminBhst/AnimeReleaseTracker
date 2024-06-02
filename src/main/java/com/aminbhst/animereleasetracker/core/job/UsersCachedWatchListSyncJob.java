@@ -4,6 +4,7 @@ import com.aminbhst.animereleasetracker.core.model.TelegramUser;
 import com.aminbhst.animereleasetracker.core.repository.TelegramUserRepository;
 import com.aminbhst.animereleasetracker.core.service.TelegramUserService;
 import com.aminbhst.animereleasetracker.util.JPAPageProcessor;
+import com.aminbhst.quartzautoconfigboot.annotation.QuartzJob;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @DisallowConcurrentExecution
+@QuartzJob(cron = "0 0 */6 ? * *")
 public class UsersCachedWatchListSyncJob extends JPAPageProcessor<TelegramUser> implements Job {
 
     private final TelegramUserRepository telegramUserRepository;

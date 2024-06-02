@@ -2,6 +2,7 @@ package com.aminbhst.animereleasetracker.core.job;
 
 import com.aminbhst.animereleasetracker.config.ConfigProperties;
 import com.aminbhst.animereleasetracker.core.initializer.SeasonalAnimeInitializer;
+import com.aminbhst.quartzautoconfigboot.annotation.QuartzJob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.DisallowConcurrentExecution;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @DisallowConcurrentExecution
+@QuartzJob(cron = "0 0 1 * * ?")
 public class SeasonalAnimeInitializerJob implements Job {
 
     private final SeasonalAnimeInitializer seasonalAnimeInitializer;
