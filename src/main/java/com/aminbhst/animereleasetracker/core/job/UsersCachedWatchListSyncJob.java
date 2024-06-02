@@ -1,10 +1,8 @@
 package com.aminbhst.animereleasetracker.core.job;
 
-import com.aminbhst.animereleasetracker.core.model.AnimeTitle;
 import com.aminbhst.animereleasetracker.core.model.TelegramUser;
-import com.aminbhst.animereleasetracker.core.provider.MyAnimeListApi;
-import com.aminbhst.animereleasetracker.core.repository.AnimeTitleRepository;
 import com.aminbhst.animereleasetracker.core.repository.TelegramUserRepository;
+import com.aminbhst.animereleasetracker.core.service.TelegramUserService;
 import com.aminbhst.animereleasetracker.util.JPAPageProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
@@ -14,11 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 
 @Slf4j
@@ -27,16 +20,13 @@ import java.util.List;
 public class UsersCachedWatchListSyncJob extends JPAPageProcessor<TelegramUser> implements Job {
 
     private final TelegramUserRepository telegramUserRepository;
-    private final AnimeTitleRepository animeTitleRepository;
-    private final MyAnimeListApi myAnimeListApi;
+    private final TelegramUserService telegramUserService;
 
     @Autowired
     public UsersCachedWatchListSyncJob(TelegramUserRepository telegramUserRepository,
-                                       AnimeTitleRepository animeTitleRepository,
-                                       MyAnimeListApi myAnimeListApi) {
+                                       TelegramUserService telegramUserService) {
         this.telegramUserRepository = telegramUserRepository;
-        this.animeTitleRepository = animeTitleRepository;
-        this.myAnimeListApi = myAnimeListApi;
+        this.telegramUserService = telegramUserService;
     }
 
     @Override
@@ -52,19 +42,10 @@ public class UsersCachedWatchListSyncJob extends JPAPageProcessor<TelegramUser> 
     }
 
     @Override
-    @Transactional
     public void processItem(TelegramUser user) {
         log.info("updating user [{}] cached watch list", user.getId());
-        List<AnimeTitle> wachingList = myAnimeListApi.getUserWatchingList(user.getMyAnimeListUsername());
-        user.setCachedWatchList(new HashSet<>(wachingList));
-        List<AnimeTitle> animeTitles = new ArrayList<>();
-        for (AnimeTitle animeTitle : wachingList) {
-            animeTitle = animeTitleRepository.findById(animeTitle.getId()).orElseThrow();
-            animeTitle.getUsers().add(user);
-            animeTitles.add(animeTitle);
-        }
-        animeTitleRepository.saveAll(animeTitles);
-        telegramUserRepository.save(user);
+        telegramUserService.updateUserWatchlist(user);
         log.info("Successfully updated user [{}] cached watch list", user.getId());
     }
+
 }
