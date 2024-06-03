@@ -10,6 +10,7 @@ import com.aminbhst.animereleasetracker.core.tracker.NyaaReleaseTracker;
 import com.aminbhst.animereleasetracker.core.tracker.TrackerResult;
 import com.aminbhst.animereleasetracker.util.JPAPageProcessor;
 import com.aminbhst.quartzautoconfigboot.annotation.QuartzJob;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 
 
+@Slf4j
 @Component
 @DisallowConcurrentExecution
 @QuartzJob(cron = "0 0 * ? * *")
@@ -51,7 +53,9 @@ public class AnimeReleaseCheckerJob extends JPAPageProcessor<AnimeTitle> impleme
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
+        log.info("Started AnimeReleaseCheckerJob");
         super.process();
+        log.info("Finished AnimeReleaseCheckerJob");
     }
 
     @Override
