@@ -81,9 +81,9 @@ public class TelegramUserService {
         log.info("{} currently watching anime were found for user {}", wachingList.size(), user.getMyAnimeListUsername());
         user.setCachedWatchList(new HashSet<>(wachingList));
         for (AnimeTitle animeTitle : wachingList) {
-            animeTitle = animeTitleRepository.findById(animeTitle.getId()).orElseThrow();
-            animeTitle.getUsers().add(user);
-            animeTitleRepository.save(animeTitle);
+            AnimeTitle anime = animeTitleRepository.findById(animeTitle.getId()).orElseThrow();
+            anime.getUsers().add(user);
+            animeTitleRepository.save(anime);
         }
         telegramUserRepository.save(user);
     }
