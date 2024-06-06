@@ -1,6 +1,7 @@
 package com.aminbhst.animereleasetracker;
 
 import com.aminbhst.animereleasetracker.bot.AnimeReleaseTrackerBot;
+import com.aminbhst.animereleasetracker.core.job.SeasonalAnimeInitializerJob;
 import com.aminbhst.animereleasetracker.core.job.UsersCachedWatchListSyncJob;
 import com.aminbhst.quartzautoconfigboot.annotation.EnableQuartzConfiguration;
 import org.springframework.boot.SpringApplication;

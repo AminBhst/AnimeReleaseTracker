@@ -83,7 +83,8 @@ public class TelegramUserService {
         List<AnimeTitle> animeTitles = new ArrayList<>();
         for (AnimeTitle animeTitle : wachingList) {
             animeTitle = animeTitleRepository.findById(animeTitle.getId()).orElseThrow();
-            if (animeTitle.getUsers().contains(user))
+            List<Long> userIds = animeTitle.getUsers().stream().map(TelegramUser::getId).toList();
+            if (userIds.contains(user.getId()))
                 continue;
 
             animeTitle.getUsers().add(user);
