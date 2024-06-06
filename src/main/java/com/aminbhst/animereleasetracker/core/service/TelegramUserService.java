@@ -78,6 +78,7 @@ public class TelegramUserService {
     @Transactional
     public void updateUserWatchlist(TelegramUser user) {
         List<AnimeTitle> wachingList = myAnimeListApi.getUserWatchingList(user.getMyAnimeListUsername());
+        log.info("{} currently watching anime were found for user {}", wachingList.size(), user.getMyAnimeListUsername());
         user.setCachedWatchList(new HashSet<>(wachingList));
         List<AnimeTitle> animeTitles = new ArrayList<>();
         for (AnimeTitle animeTitle : wachingList) {

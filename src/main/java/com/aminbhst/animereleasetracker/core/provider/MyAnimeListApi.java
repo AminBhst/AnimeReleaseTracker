@@ -8,7 +8,6 @@ import com.aminbhst.animereleasetracker.core.tracker.AnimeListReleaseTracker;
 import com.aminbhst.animereleasetracker.core.tracker.NyaaReleaseTracker;
 import com.aminbhst.animereleasetracker.core.tracker.TrackerResult;
 import com.aminbhst.animereleasetracker.exception.AnimeTitleExistsException;
-import com.aminbhst.animereleasetracker.util.DateUtils;
 import com.aminbhst.animereleasetracker.util.HttpUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +56,19 @@ public class MyAnimeListApi {
 
     public List<AnimeTitle> getUserWatchingList(String username) {
         JsonNode json = HttpUtils.getJson(String.format(URL_FORMAT_WATCHING, username), headers);
+        List<AnimeTitle> watchingList = getAnimeTitlesFromWatchingList(json);
+        JsonNode paging = json.get("paging");
+        while (paging != null && !paging.isNull() && paging.get("next") != null && !paging.get("next").isNull()) {
+            String nextUrl = paging.get("next").asText();
+            JsonNode response = HttpUtils.getJson(nextUrl, headers);
+            List<AnimeTitle> animeTitleList = getAnimeTitlesFromWatchingList(response);
+            watchingList.addAll(animeTitleList);
+            paging = response.get("paging");
+        }
+        return watchingList;
+    }
+
+    private List<AnimeTitle> getAnimeTitlesFromWatchingList(JsonNode json) {
         ArrayNode data = (ArrayNode) json.get("data");
         List<AnimeTitle> watchingList = new ArrayList<>();
         for (JsonNode item : data) {
